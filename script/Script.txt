@@ -1,0 +1,1 @@
+This is a test script that should work with the teleprompter. Make sure its location matches that set in the teleprompter.pde code because I didn't put any exception handling for 'file not found' in (I ran out of time).
