@@ -1,0 +1,67 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <script type="text/javascript">
+
+        // We need to check if the browser supports WebSockets
+
+        if ("WebSocket" in window) {
+
+            // Before we can connect to the WebSocket, we need to start it in Processing.
+
+            var ws = new WebSocket("ws://localhost:58008/stt");
+	    
+        } else {
+
+            // The browser doesn't support WebSocket
+
+            alert("WebSocket NOT supported by your Browser!");
+        }
+
+        // Now we can start the speech recognition
+        // Supported only in Chrome
+        // Once started, you need to allow Chrome to use the microphone
+
+        var recognition = new webkitSpeechRecognition();
+	var lastword = "";
+
+        // Be default, Chrome will only return a single result.
+        // By enabling "continuous", Chrome will keep the microphone active.
+
+        recognition.continuous = true;
+	recognition.interimResults = true;
+	recognition.lang = "en-GB"
+
+        recognition.onresult = function(event) {
+
+            // Get the current result from the results object
+            var transcript = event.results[event.results.length-1][0].transcript;
+	    var lines = transcript.split(' ');
+	    var index = lines.length - 1;
+	    while (index > 0 && lines[index].length == 0) index --;
+	    var thisword = lines[index].toLowerCase();
+	    if (thisword.length > 0 && thisword !== lastword)
+	    {
+		lastword = thisword;
+		console.log(thisword);
+		ws.send(thisword);
+	    }
+
+            // Send the result string via WebSocket to the running Processing Sketch
+            //ws.send(transcript);
+        }
+
+        // Start the recognition
+        recognition.start();
+        
+        // Restart the recognition on timeout
+        recognition.onend = function(){
+            recognition.start();
+	    ws.send(""); // keep the websocket alive (hopefully)
+        }
+
+</script>
+</head>
+<body>
+</body>
+</html>
